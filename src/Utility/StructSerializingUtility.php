@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Struct\Serializing\Utility;
 
+use Exception\Unexpected\UnexpectedException;
 use Struct\Contracts\StructInterface;
-use Struct\Exception\UnexpectedException;
 use Struct\Serializing\Private\Utility\SerializeUtility;
 use Struct\Serializing\Private\Utility\UnSerializeUtility;
 

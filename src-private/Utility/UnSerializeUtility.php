@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Struct\Serializing\Private\Utility;
 
+use Exception\Unexpected\UnexpectedException;
 use Struct\Contracts\DataType\DataTypeInterface;
 use Struct\Contracts\StructInterface;
 
 use Struct\Exception\InvalidValueException;
-use Struct\Exception\UnexpectedException;
 use Struct\Serializing\Exception\TransformException;
 use Struct\Serializing\Private\Enum\SerializeDataType;
 use Struct\Serializing\Private\Helper\TransformHelper;
