@@ -1,5 +1,5 @@
 {
-  "name": "struct/serialize",
+  "name": "struct/serializing",
   "license": "MIT",
   "description": "Simple package for serializing and deserializing of Structs",
   "require": {
