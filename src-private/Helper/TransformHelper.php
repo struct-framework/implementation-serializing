@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Struct\Serializing\Private\Helper;
 
-use Struct\Exception\Serializer\TransformException;
+use Struct\Serializing\Exception\TransformException;
 
 class TransformHelper
 {

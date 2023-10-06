@@ -8,8 +8,8 @@ use Struct\Contracts\DataType\DataTypeInterface;
 use Struct\Contracts\StructInterface;
 
 use Struct\Exception\InvalidValueException;
-use Struct\Exception\Serializer\TransformException;
 use Struct\Exception\UnexpectedException;
+use Struct\Serializing\Exception\TransformException;
 use Struct\Serializing\Private\Enum\SerializeDataType;
 use Struct\Serializing\Private\Helper\TransformHelper;
 use Struct\Struct\Factory\ModelFactory;
