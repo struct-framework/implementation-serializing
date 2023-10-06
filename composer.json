@@ -1,0 +1,16 @@
+{
+  "name": "struct/serialize",
+  "license": "MIT",
+  "description": "Simple package for serializing and deserializing of Structs",
+  "require": {
+    "php": "~8.2.7|~8.1.5",
+    "struct/contracts": "^1.4.0",
+    "struct/contracts-data-type": "^1.4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Struct\\Serializing\\": "src",
+      "Struct\\Serializing\\Private\\": "src-private"
+    }
+  }
+}
