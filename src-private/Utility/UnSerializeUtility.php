@@ -13,7 +13,7 @@ use Struct\Serializing\Exception\TransformException;
 use Struct\Serializing\Private\Enum\SerializeDataType;
 use Struct\Serializing\Private\Helper\TransformHelper;
 use Struct\Struct\Factory\ModelFactory;
-use Struct\Struct\Private\Helper\PropertyReflectionHelper;
+use Struct\Struct\Helper\PropertyReflectionHelper;
 use Struct\Struct\Struct\PropertyReflection;
 
 class UnSerializeUtility

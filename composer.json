@@ -6,7 +6,8 @@
     "php": "~8.2.7|~8.1.5",
     "exception/unexpected" : "1.0.0",
     "struct/contracts": "^1.4.0",
-    "struct/contracts-data-type": "^1.4.0"
+    "struct/contracts-data-type": "^1.4.0",
+    "struct/struct" : "1.4.0"
   },
   "autoload": {
     "psr-4": {
