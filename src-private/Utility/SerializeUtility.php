@@ -4,40 +4,40 @@ declare(strict_types=1);
 
 namespace Struct\Serializing\Private\Utility;
 
+use Exception\Unexpected\UnexpectedException;
 use Struct\Contracts\DataType\DataTypeInterface;
 use Struct\Contracts\StructInterface;
 use Struct\Exception\InvalidStructException;
-use Struct\Exception\UnexpectedException;
+use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Private\Helper\TransformHelper;
 
 class SerializeUtility
 {
     /**
-     * @param StructInterface $structure
      * @return array<mixed>
      */
-    public function serialize(StructInterface $structure): array
+    public function serialize(StructInterface $structure, ?KeyConvert $keyConvert): array
     {
-        $serializedData = $this->_serialize($structure);
+        $serializedData = $this->_serialize($structure, $keyConvert);
         return $serializedData;
     }
 
     /**
-     * @param StructInterface $structure
      * @return array<mixed>
      */
-    public function _serialize(StructInterface $structure): array
+    public function _serialize(StructInterface $structure, ?KeyConvert $keyConvert): array
     {
         $serializedData = [];
 
         $propertyNames = $this->readPropertyNames($structure);
         foreach ($propertyNames as $propertyName) {
             $value = $structure->$propertyName; // @phpstan-ignore-line
-            $formattedValue = $this->formatValue($value);
+            $formattedValue = $this->formatValue($value, $keyConvert);
             if ($formattedValue === null) {
                 continue;
             }
-            $serializedData[$propertyName] = $formattedValue;
+            $arrayKey = CaseStyleUtility::buildArrayKeyFromPropertyName($propertyName, $keyConvert);
+            $serializedData[$arrayKey] = $formattedValue;
         }
 
         return $serializedData;
@@ -66,7 +66,7 @@ class SerializeUtility
         return $propertyNames;
     }
 
-    protected function formatValue(mixed $value): mixed
+    protected function formatValue(mixed $value, ?KeyConvert $keyConvert): mixed
     {
         $type = \gettype($value);
         if ($value === null) {
@@ -82,13 +82,13 @@ class SerializeUtility
             return $value;
         }
 
-        return $this->formatComplexValue($value);
+        return $this->formatComplexValue($value, $keyConvert);
     }
 
-    protected function formatComplexValue(mixed $value): mixed
+    protected function formatComplexValue(mixed $value, ?KeyConvert $keyConvert): mixed
     {
         if (\is_array($value)) {
-            return $this->formatArrayValue($value);
+            return $this->formatArrayValue($value, $keyConvert);
         }
 
         if ($value instanceof \UnitEnum) {
@@ -96,7 +96,7 @@ class SerializeUtility
         }
 
         if (\is_object($value)) {
-            return $this->formatObjectValue($value);
+            return $this->formatObjectValue($value, $keyConvert);
         }
 
         throw new InvalidStructException('The type of value is not supported', 1651515873);
@@ -106,15 +106,16 @@ class SerializeUtility
      * @param array<mixed> $value
      * @return array<mixed>
      */
-    protected function formatArrayValue(array $value): array
+    protected function formatArrayValue(array $value, ?KeyConvert $keyConvert): array
     {
         $isList = \array_is_list($value);
         $values = [];
         foreach ($value as $key => $item) {
             if ($isList) {
-                $values[] = $this->formatValue($item);
+                $values[] = $this->formatValue($item, $keyConvert);
             } else {
-                $values[$key] = $this->formatValue($item);
+                $keyArray = CaseStyleUtility::buildArrayKeyFromPropertyName($key, $keyConvert);
+                $values[$keyArray] = $this->formatValue($item, $keyConvert);
             }
         }
         return $values;
@@ -124,13 +125,13 @@ class SerializeUtility
      * @param object $value
      * @return array<mixed>|string
      */
-    protected function formatObjectValue(object $value): array|string
+    protected function formatObjectValue(object $value, ?KeyConvert $keyConvert): array|string
     {
         if (\is_a($value, \DateTimeInterface::class)) {
             return TransformHelper::formatDateTime($value);
         }
         if (\is_a($value, StructInterface::class)) {
-            return $this->_serialize($value);
+            return $this->_serialize($value, $keyConvert);
         }
         if (\is_a($value, DataTypeInterface::class)) {
             return $value->serializeToString();

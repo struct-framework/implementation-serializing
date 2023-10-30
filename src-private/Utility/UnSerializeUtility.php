@@ -9,6 +9,7 @@ use Struct\Contracts\DataType\DataTypeInterface;
 use Struct\Contracts\StructInterface;
 
 use Struct\Exception\InvalidValueException;
+use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Exception\TransformException;
 use Struct\Serializing\Private\Enum\SerializeDataType;
 use Struct\Serializing\Private\Helper\TransformHelper;
@@ -24,20 +25,20 @@ class UnSerializeUtility
      * @param class-string<T> $type
      * @return T
      */
-    public function unSerialize(array|Object $data, string $type): StructInterface
+    public function unSerialize(array|Object $data, string $type, ?KeyConvert $keyConvert): StructInterface
     {
-        $structure = $this->_unSerializeStructure($data, $type);
+        $structure = $this->_unSerializeStructure($data, $type, $keyConvert);
         return $structure;
     }
 
-    protected function _unSerialize(mixed $data, string $type, PropertyReflection $propertyReflection): mixed
+    protected function _unSerialize(mixed $data, string $type, PropertyReflection $propertyReflection, ?KeyConvert $keyConvert): mixed
     {
         $dataType = $this->_findDataType($data, $type);
         $result = match ($dataType) {
-            SerializeDataType::StructureType  => $this->_unSerializeStructure($data, $type), // @phpstan-ignore-line
+            SerializeDataType::StructureType  => $this->_unSerializeStructure($data, $type, $keyConvert), // @phpstan-ignore-line
             SerializeDataType::NullType => $this->parseNull($propertyReflection),
             SerializeDataType::EnumType => $this->_unSerializeEnum($data, $type),
-            SerializeDataType::ArrayType => $this->_unSerializeArray($data, $propertyReflection),
+            SerializeDataType::ArrayType => $this->_unSerializeArray($data, $propertyReflection, $keyConvert),
             SerializeDataType::DataType => $this->_unSerializeDataType($data, $propertyReflection), // @phpstan-ignore-line
             SerializeDataType::BuildInType => $this->_unSerializeBuildIn($data, $type, $propertyReflection),
         };
@@ -49,7 +50,7 @@ class UnSerializeUtility
      * @param class-string<T> $type
      * @return T
      */
-    protected function _unSerializeStructure(mixed $data, string $type): StructInterface
+    protected function _unSerializeStructure(mixed $data, string $type, ?KeyConvert $keyConvert): StructInterface
     {
         $dataArray = $this->_transformObjectToArray($data);
         if (is_a($type, StructInterface::class, true) === false) {
@@ -59,12 +60,13 @@ class UnSerializeUtility
         $propertyReflections = PropertyReflectionHelper::readProperties($structure);
 
         foreach ($propertyReflections as $propertyReflection) {
-            $name = $propertyReflection->name;
+            $propertyName = $propertyReflection->name;
             $value = null;
-            if (\array_key_exists($name, $dataArray) === true) {
-                $value = $dataArray[$name];
+            $arrayKey = CaseStyleUtility::buildArrayKeyFromPropertyName($propertyName, $keyConvert);
+            if (\array_key_exists($arrayKey, $dataArray) === true) {
+                $value = $dataArray[$arrayKey];
             }
-            $structure->$name = $this->_unSerialize($value, $propertyReflection->type, $propertyReflection);  // @phpstan-ignore-line
+            $structure->$propertyName = $this->_unSerialize($value, $propertyReflection->type, $propertyReflection, $keyConvert);  // @phpstan-ignore-line
         }
 
         return $structure;
@@ -160,7 +162,7 @@ class UnSerializeUtility
      * @param PropertyReflection $propertyReflection
      * @return array<mixed>
      */
-    protected function _unSerializeArray(mixed $dataArray, PropertyReflection $propertyReflection): array
+    protected function _unSerializeArray(mixed $dataArray, PropertyReflection $propertyReflection, ?KeyConvert $keyConvert): array
     {
         if (\is_array($dataArray) === false) {
             throw new UnexpectedException(1675967242);
@@ -172,9 +174,9 @@ class UnSerializeUtility
         $parsedOutput = [];
         foreach ($dataArray as $key => $value) {
             if ($propertyReflection->isArrayKeyList === true) {
-                $parsedOutput[$key] = $this->_unSerialize($value, $type, $propertyReflection);
+                $parsedOutput[$key] = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
             } else {
-                $parsedOutput[] = $this->_unSerialize($value, $type, $propertyReflection);
+                $parsedOutput[] = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
             }
         }
 

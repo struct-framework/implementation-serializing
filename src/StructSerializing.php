@@ -2,33 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Struct\Serializing\Utility;
+namespace Struct\Serializing;
 
 use Exception\Unexpected\UnexpectedException;
 use Struct\Contracts\StructInterface;
+use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Private\Utility\SerializeUtility;
 use Struct\Serializing\Private\Utility\UnSerializeUtility;
 
-/**
- * @deprecated
- */
-class StructSerializingUtility
+class StructSerializing
 {
-    protected SerializeUtility $serializeUtility;
-    protected UnSerializeUtility $unSerializeUtility;
-
-    public function __construct()
-    {
-        $this->serializeUtility = new SerializeUtility();
-        $this->unSerializeUtility = new UnSerializeUtility();
-    }
-
     /**
      * @return mixed[]
      */
-    public function serialize(StructInterface $structure): array
+    public static function serialize(StructInterface $structure, ?KeyConvert $keyConvert = null): array
     {
-        return $this->serializeUtility->serialize($structure, null);
+        $serializeUtility = new SerializeUtility();
+        return $serializeUtility->serialize($structure, $keyConvert);
     }
 
     /**
@@ -37,14 +27,15 @@ class StructSerializingUtility
      * @param class-string<T> $type
      * @return T
      */
-    public function deserialize(object|array $data, string $type): StructInterface
+    public static function deserialize(object|array $data, string $type, ?KeyConvert $keyConvert = null): StructInterface
     {
-        return $this->unSerializeUtility->unSerialize($data, $type, null);
+        $unSerializeUtility = new UnSerializeUtility();
+        return $unSerializeUtility->unSerialize($data, $type, $keyConvert);
     }
 
-    public function serializeToJson(StructInterface $structure): string
+    public static function serializeToJson(StructInterface $structure, ?KeyConvert $keyConvert = null): string
     {
-        $dataArray = $this->serialize($structure);
+        $dataArray = self::serialize($structure, $keyConvert);
         $dataJson = \json_encode($dataArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         if ($dataJson === false) {
             throw new UnexpectedException(1675972511);
@@ -58,7 +49,7 @@ class StructSerializingUtility
      * @param class-string<T> $type
      * @return T
      */
-    public function deserializeFromJson(string $dataJson, string $type): StructInterface
+    public static function deserializeFromJson(string $dataJson, string $type, ?KeyConvert $keyConvert = null): StructInterface
     {
         try {
             /** @var mixed[] $dataArray */
@@ -66,6 +57,6 @@ class StructSerializingUtility
         } catch (\JsonException $exception) {
             throw new \LogicException('Can not parse the given JSON string', 1675972764, $exception);
         }
-        return $this->unSerializeUtility->unSerialize($dataArray, $type, null);
+        return self::deserialize($dataArray, $type, $keyConvert);
     }
 }
