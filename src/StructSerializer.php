@@ -10,7 +10,7 @@ use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Private\Utility\SerializeUtility;
 use Struct\Serializing\Private\Utility\UnSerializeUtility;
 
-class StructSerializing
+class StructSerializer
 {
     /**
      * @return mixed[]

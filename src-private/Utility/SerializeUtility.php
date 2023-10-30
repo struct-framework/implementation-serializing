@@ -114,8 +114,7 @@ class SerializeUtility
             if ($isList) {
                 $values[] = $this->formatValue($item, $keyConvert);
             } else {
-                $keyArray = CaseStyleUtility::buildArrayKeyFromPropertyName($key, $keyConvert);
-                $values[$keyArray] = $this->formatValue($item, $keyConvert);
+                $values[$key] = $this->formatValue($item, $keyConvert);
             }
         }
         return $values;
