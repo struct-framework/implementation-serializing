@@ -6,20 +6,26 @@ namespace Struct\Serializing\Private\Utility;
 
 use Exception\Unexpected\UnexpectedException;
 use Struct\Contracts\DataType\DataTypeInterface;
+use Struct\Contracts\StructCollectionInterface;
 use Struct\Contracts\StructInterface;
 use Struct\Exception\InvalidStructException;
 use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Private\Helper\TransformHelper;
-use Struct\Struct\StructCollection;
 
 class SerializeUtility
 {
     /**
      * @return array<mixed>
      */
-    public function serialize(StructInterface $structure, ?KeyConvert $keyConvert): array
+    public function serialize(StructInterface|StructCollectionInterface $structure, ?KeyConvert $keyConvert): array
     {
-        $serializedData = $this->_serialize($structure, $keyConvert);
+        if ($structure instanceof StructInterface) {
+            $serializedData = $this->_serialize($structure, $keyConvert);
+        }
+        if ($structure instanceof StructCollectionInterface) {
+            /** @var array<mixed> $serializedData */
+            $serializedData = $this->formatComplexValue($structure, $keyConvert);
+        }
         return $serializedData;
     }
 
@@ -91,7 +97,7 @@ class SerializeUtility
         if (\is_array($value)) {
             return $this->formatArrayValue($value, $keyConvert);
         }
-        if ($value instanceof StructCollection) {
+        if ($value instanceof StructCollectionInterface) {
             return $this->formatArrayValue($value->getValues(), $keyConvert);
         }
         if ($value instanceof \UnitEnum) {

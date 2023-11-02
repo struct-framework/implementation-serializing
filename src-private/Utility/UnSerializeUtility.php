@@ -21,15 +21,25 @@ use Struct\Struct\Struct\PropertyReflection;
 class UnSerializeUtility
 {
     /**
-     * @template T of StructInterface
+     * @template T of StructInterface|StructCollectionInterface
      * @param array<mixed>|Object $data
      * @param class-string<T> $type
      * @return T
      */
-    public function unSerialize(array|Object $data, string $type, ?KeyConvert $keyConvert): StructInterface
+    public function unSerialize(array|Object $data, string $type, ?KeyConvert $keyConvert): StructInterface|StructCollectionInterface
     {
-        $structure = $this->_unSerializeStructure($data, $type, $keyConvert);
-        return $structure;
+        $structure = null;
+        if (\is_a($type, StructInterface::class, true) === true) {
+            $structure = $this->_unSerializeStructure($data, $type, $keyConvert);
+        }
+        if (\is_a($type, StructCollectionInterface::class, true) === true) {
+            $propertyReflection = PropertyReflectionHelper::readPropertyOfStructCollection($type);
+            $structure = $this->_unSerializeStructCollection($data, $propertyReflection, $keyConvert);
+        }
+        if ($structure === null) {
+            throw new \LogicException('The type: <' . $type . '> must be an StructInterface or StructCollectionInterface', 1698960691);
+        }
+        return $structure; // @phpstan-ignore-line
     }
 
     protected function _unSerialize(mixed $data, string $type, PropertyReflection $propertyReflection, ?KeyConvert $keyConvert): mixed

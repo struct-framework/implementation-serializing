@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Struct\Serializing\Utility;
 
 use Exception\Unexpected\UnexpectedException;
+use Struct\Contracts\StructCollectionInterface;
 use Struct\Contracts\StructInterface;
 use Struct\Serializing\Private\Utility\SerializeUtility;
 use Struct\Serializing\Private\Utility\UnSerializeUtility;
@@ -37,7 +38,7 @@ class StructSerializingUtility
      * @param class-string<T> $type
      * @return T
      */
-    public function deserialize(object|array $data, string $type): StructInterface
+    public function deserialize(object|array $data, string $type): StructInterface|StructCollectionInterface
     {
         return $this->unSerializeUtility->unSerialize($data, $type, null);
     }

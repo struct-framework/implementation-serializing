@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Struct\Serializing;
 
 use Exception\Unexpected\UnexpectedException;
+use Struct\Contracts\StructCollectionInterface;
 use Struct\Contracts\StructInterface;
 use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Private\Utility\SerializeUtility;
@@ -15,19 +16,19 @@ class StructSerializer
     /**
      * @return mixed[]
      */
-    public static function serialize(StructInterface $structure, ?KeyConvert $keyConvert = null): array
+    public static function serialize(StructInterface|StructCollectionInterface $structure, ?KeyConvert $keyConvert = null): array
     {
         $serializeUtility = new SerializeUtility();
         return $serializeUtility->serialize($structure, $keyConvert);
     }
 
     /**
-     * @template T of StructInterface
+     * @template T of StructInterface|StructCollectionInterface
      * @param object|array<mixed> $data
      * @param class-string<T> $type
      * @return T
      */
-    public static function deserialize(object|array $data, string $type, ?KeyConvert $keyConvert = null): StructInterface
+    public static function deserialize(object|array $data, string $type, ?KeyConvert $keyConvert = null): StructInterface|StructCollectionInterface
     {
         $unSerializeUtility = new UnSerializeUtility();
         return $unSerializeUtility->unSerialize($data, $type, $keyConvert);
