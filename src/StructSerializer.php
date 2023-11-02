@@ -34,7 +34,7 @@ class StructSerializer
         return $unSerializeUtility->unSerialize($data, $type, $keyConvert);
     }
 
-    public static function serializeToJson(StructInterface $structure, ?KeyConvert $keyConvert = null): string
+    public static function serializeToJson(StructInterface|StructCollectionInterface $structure, ?KeyConvert $keyConvert = null): string
     {
         $dataArray = self::serialize($structure, $keyConvert);
         $dataJson = \json_encode($dataArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -45,12 +45,12 @@ class StructSerializer
     }
 
     /**
-     * @template T of StructInterface
+     * @template T of StructInterface|StructCollectionInterface
      * @param string $dataJson
      * @param class-string<T> $type
      * @return T
      */
-    public static function deserializeFromJson(string $dataJson, string $type, ?KeyConvert $keyConvert = null): StructInterface
+    public static function deserializeFromJson(string $dataJson, string $type, ?KeyConvert $keyConvert = null): StructInterface|StructCollectionInterface
     {
         try {
             /** @var mixed[] $dataArray */
