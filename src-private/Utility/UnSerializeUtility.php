@@ -161,7 +161,10 @@ class UnSerializeUtility
 
     protected function _unSerializeStructCollection(mixed $dataArray, PropertyReflection $propertyReflection, ?KeyConvert $keyConvert): StructCollectionInterface
     {
-        if (\is_array($dataArray) === false) {
+        if (
+            \is_array($dataArray) === false &&
+            $dataArray instanceof StructCollectionInterface === false
+        ) {
             throw new UnexpectedException(1675967242);
         }
         $type = $propertyReflection->type;
@@ -169,7 +172,12 @@ class UnSerializeUtility
         $structCollection = new $type();
         /** @var string $type */
         $type = $propertyReflection->structTypeOfArrayOrCollection;
-        foreach ($dataArray as $value) {
+
+        $values = $dataArray;
+        if ($dataArray instanceof StructCollectionInterface === true) {
+            $values = $dataArray->getValues();
+        }
+        foreach ($values as $value) {
             /** @var StructInterface $value */
             $value = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
             $structCollection->addValue($value);
