@@ -92,7 +92,7 @@ class SerializeUtility
             return $this->formatArrayValue($value, $keyConvert);
         }
         if ($value instanceof StructCollection) {
-            return $this->formatArrayValue($value->values, $keyConvert);
+            return $this->formatArrayValue($value->getValues(), $keyConvert);
         }
         if ($value instanceof \UnitEnum) {
             return TransformHelper::formatEnum($value);

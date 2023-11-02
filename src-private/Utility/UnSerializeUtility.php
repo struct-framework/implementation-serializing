@@ -17,7 +17,6 @@ use Struct\Serializing\Private\Helper\TransformHelper;
 use Struct\Struct\Factory\DataTypeFactory;
 use Struct\Struct\Helper\PropertyReflectionHelper;
 use Struct\Struct\Struct\PropertyReflection;
-use Struct\Struct\StructCollection;
 
 class UnSerializeUtility
 {
@@ -165,13 +164,16 @@ class UnSerializeUtility
         if (\is_array($dataArray) === false) {
             throw new UnexpectedException(1675967242);
         }
-        $structCollection = new StructCollection();
+        $type = $propertyReflection->type;
+        /** @var StructCollectionInterface $structCollection */
+        $structCollection = new $type();
         /** @var string $type */
         $type = $propertyReflection->structTypeOfArrayOrCollection;
-        $isArrayKeyList = false;
-        /** @var array<StructInterface> $values */
-        $values = $this->_buildArray($dataArray, $propertyReflection, $type, $isArrayKeyList, $keyConvert);
-        $structCollection->values = $values;
+        foreach ($dataArray as $value) {
+            /** @var StructInterface $value */
+            $value = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
+            $structCollection->addValue($value);
+        }
         return $structCollection;
     }
 
