@@ -10,6 +10,7 @@ use Struct\Contracts\StructInterface;
 use Struct\Exception\InvalidStructException;
 use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Private\Helper\TransformHelper;
+use Struct\Struct\StructCollection;
 
 class SerializeUtility
 {
@@ -90,7 +91,9 @@ class SerializeUtility
         if (\is_array($value)) {
             return $this->formatArrayValue($value, $keyConvert);
         }
-
+        if ($value instanceof StructCollection) {
+            return $this->formatArrayValue($value->values, $keyConvert);
+        }
         if ($value instanceof \UnitEnum) {
             return TransformHelper::formatEnum($value);
         }

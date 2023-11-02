@@ -7,7 +7,7 @@
     "exception/unexpected" : "1.0.0",
     "struct/contracts": "^1.4.0",
     "struct/contracts-data-type": "^1.4.0",
-    "struct/struct" : "1.4.0"
+    "struct/struct" : "1.4.2"
   },
   "autoload": {
     "psr-4": {

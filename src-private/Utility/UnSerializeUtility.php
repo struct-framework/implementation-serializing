@@ -6,6 +6,7 @@ namespace Struct\Serializing\Private\Utility;
 
 use Exception\Unexpected\UnexpectedException;
 use Struct\Contracts\DataType\DataTypeInterface;
+use Struct\Contracts\StructCollectionInterface;
 use Struct\Contracts\StructInterface;
 
 use Struct\Exception\InvalidValueException;
@@ -13,9 +14,10 @@ use Struct\Serializing\Enum\KeyConvert;
 use Struct\Serializing\Exception\TransformException;
 use Struct\Serializing\Private\Enum\SerializeDataType;
 use Struct\Serializing\Private\Helper\TransformHelper;
-use Struct\Struct\Factory\ModelFactory;
+use Struct\Struct\Factory\DataTypeFactory;
 use Struct\Struct\Helper\PropertyReflectionHelper;
 use Struct\Struct\Struct\PropertyReflection;
+use Struct\Struct\StructCollection;
 
 class UnSerializeUtility
 {
@@ -38,6 +40,7 @@ class UnSerializeUtility
             SerializeDataType::StructureType  => $this->_unSerializeStructure($data, $type, $keyConvert), // @phpstan-ignore-line
             SerializeDataType::NullType => $this->parseNull($propertyReflection),
             SerializeDataType::EnumType => $this->_unSerializeEnum($data, $type),
+            SerializeDataType::StructCollection => $this->_unSerializeStructCollection($data, $propertyReflection, $keyConvert),
             SerializeDataType::ArrayType => $this->_unSerializeArray($data, $propertyReflection, $keyConvert),
             SerializeDataType::DataType => $this->_unSerializeDataType($data, $propertyReflection), // @phpstan-ignore-line
             SerializeDataType::BuildInType => $this->_unSerializeBuildIn($data, $type, $propertyReflection),
@@ -84,10 +87,10 @@ class UnSerializeUtility
             return SerializeDataType::DataType;
         }
         if (is_a($type, StructInterface::class, true) === true) {
-            //if (\is_array($data) && \count($data) === 0) {
-            //    return SerializeDataType::NullType;
-            //}
             return SerializeDataType::StructureType;
+        }
+        if (is_a($type, StructCollectionInterface::class, true) === true) {
+            return SerializeDataType::StructCollection;
         }
         if ($type === 'array') {
             return SerializeDataType::ArrayType;
@@ -153,13 +156,26 @@ class UnSerializeUtility
         $serializedData = (string) $serializedData;
         /** @var class-string<DataTypeInterface> $type */
         $type = $propertyReflection->type;
-        $dataType = ModelFactory::createDataTypeFromString($type, $serializedData);
+        $dataType = DataTypeFactory::create($type, $serializedData);
         return $dataType;
     }
 
+    protected function _unSerializeStructCollection(mixed $dataArray, PropertyReflection $propertyReflection, ?KeyConvert $keyConvert): StructCollectionInterface
+    {
+        if (\is_array($dataArray) === false) {
+            throw new UnexpectedException(1675967242);
+        }
+        $structCollection = new StructCollection();
+        /** @var string $type */
+        $type = $propertyReflection->structTypeOfArrayOrCollection;
+        $isArrayKeyList = false;
+        /** @var array<StructInterface> $values */
+        $values = $this->_buildArray($dataArray, $propertyReflection, $type, $isArrayKeyList, $keyConvert);
+        $structCollection->values = $values;
+        return $structCollection;
+    }
+
     /**
-     * @param mixed $dataArray
-     * @param PropertyReflection $propertyReflection
      * @return array<mixed>
      */
     protected function _unSerializeArray(mixed $dataArray, PropertyReflection $propertyReflection, ?KeyConvert $keyConvert): array
@@ -167,19 +183,27 @@ class UnSerializeUtility
         if (\is_array($dataArray) === false) {
             throw new UnexpectedException(1675967242);
         }
-        $type = $propertyReflection->arrayValueType;
-        if ($type === null) {
-            throw new InvalidValueException('The array type of property <' . $propertyReflection->name . '> must be declared', 1675967245);
-        }
+        /** @var string $type */
+        $type = $propertyReflection->structTypeOfArrayOrCollection;
+        $isArrayKeyList = $propertyReflection->isArrayKeyList;
+        $parsedOutput = $this->_buildArray($dataArray, $propertyReflection, $type, $isArrayKeyList, $keyConvert);
+        return $parsedOutput;
+    }
+
+    /**
+     * @param array<mixed> $dataArray
+     * @return array<mixed>
+     */
+    protected function _buildArray(array $dataArray, PropertyReflection $propertyReflection, string $type, bool $isArrayKeyList, ?KeyConvert $keyConvert): array
+    {
         $parsedOutput = [];
         foreach ($dataArray as $key => $value) {
-            if ($propertyReflection->isArrayKeyList === true) {
+            if ($isArrayKeyList === true) {
                 $parsedOutput[$key] = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
             } else {
                 $parsedOutput[] = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
             }
         }
-
         return $parsedOutput;
     }
 
