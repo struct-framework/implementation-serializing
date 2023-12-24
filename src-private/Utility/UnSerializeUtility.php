@@ -218,10 +218,14 @@ class UnSerializeUtility
     {
         $parsedOutput = [];
         foreach ($dataArray as $key => $value) {
+            $valueToSet = $value;
+            if ($type !== 'mixed') {
+                $valueToSet = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
+            }
             if ($isArrayKeyList === true) {
-                $parsedOutput[$key] = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
+                $parsedOutput[$key] = $valueToSet;
             } else {
-                $parsedOutput[] = $this->_unSerialize($value, $type, $propertyReflection, $keyConvert);
+                $parsedOutput[] = $valueToSet;
             }
         }
         return $parsedOutput;
